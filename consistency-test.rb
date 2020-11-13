@@ -50,7 +50,7 @@ class ConsistencyTester
     def genkey
         # Write more often to a small subset of keys
         ks = rand() > 0.5 ? @keyspace : @working_set
-        @prefix+"key_"+rand(ks).to_s
+        @prefix+"key_"+rand(ks).to_s+"_"+Time.now.to_i.to_s
     end
 
     def check_consistency(key,value)
@@ -80,7 +80,7 @@ class ConsistencyTester
                 check_consistency(key,val.to_i)
                 @reads += 1
             rescue => e
-                puterr "Reading: #{e.to_s}"
+              puterr Time.now.strftime("%Y-%m-%d %H:%M:%S") + " Reading: #{e.to_s}"
                 @failed_reads += 1
             end
 
@@ -89,14 +89,14 @@ class ConsistencyTester
                 @cached[key] = @r.incr(key).to_i
                 @writes += 1
             rescue => e
-                puterr "Writing: #{e.to_s}"
+                puterr Time.now.strftime("%Y-%m-%d %H:%M:%S") + " Writing: #{e.to_s}"
                 @failed_writes += 1
             end
 
             # Report
             sleep @delay
             if Time.now.to_i != last_report
-                report = "#{@reads} R (#{@failed_reads} err) | " +
+                report = Time.now.strftime("%Y-%m-%d %H:%M:%S") + " #{@reads} R (#{@failed_reads} err) | " +
                          "#{@writes} W (#{@failed_writes} err) | "
                 report += "#{@lost_writes} lost | " if @lost_writes > 0
                 report += "#{@not_ack_writes} noack | " if @not_ack_writes > 0
